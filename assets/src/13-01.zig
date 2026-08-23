@@ -3,12 +3,11 @@ const print = std.debug.print;
 const zigcli = @import("zigcli");
 
 pub fn main(init: std.process.Init) !void {
-    const gpa = init.gpa;
+    const arena = init.arena;
     const io = init.io;
 
-    const opt = try zigcli.structargs.parse(gpa, io, init.minimal.args, struct {
+    const opt = try zigcli.structargs.parse(arena.allocator(), io, init.minimal.args, struct {
         // Those fields declare arguments options
-        // only `output` is required, others are all optional
         verbose: ?bool,
         @"user-agent": enum { Chrome, Firefox, Safari } = .Firefox,
         timeout: ?u16 = 30, // default value
@@ -55,4 +54,5 @@ pub fn main(init: std.process.Init) !void {
     var buf: [1024]u8 = undefined;
     var writer = stdout.writer(io, &buf);
     try opt.printHelp(&writer.interface);
+    try writer.interface.flush();
 }
